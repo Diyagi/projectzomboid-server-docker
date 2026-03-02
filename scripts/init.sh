@@ -17,7 +17,10 @@ chown -R steam:steam /project-zomboid /project-zomboid-config /home/steam/
 
 cat /branding
 
-if [ "${UPDATE_ON_START:-true}" = "true" ]; then
+if [ ! -f "/project-zomboid/start-server.sh" ]; then
+    LogWarn "start-server.sh not found in server-files, forcing install regardless of UPDATE_ON_START"
+    install
+elif [ "${UPDATE_ON_START:-true}" = "true" ]; then
     install
 else
     LogWarn "UPDATE_ON_START is set to false, skipping server update from Steam"

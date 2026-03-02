@@ -16,14 +16,6 @@ sed -i "s|RCONPassword=.*|RCONPassword=${RCON_PASSWORD}|" "$config_file"
 
 cd /project-zomboid || exit
 
-# if GENERATE_SETTINGS IS FALSE then we will not generate the settings
-if [ "$GENERATE_SETTINGS" = "true" ]; then
-  LogAction "Compiling settings"
-  /home/steam/server/compile-settings.sh
-elif [ "$GENERATE_SETTINGS" = "false" ]; then
-  LogWarn "GENERATE_SETTINGS=false, not overwriting settings"
-fi
-
 LogAction "Starting server"
 ./start-server.sh \
     -cachedir="$CONFIG_DIR" \
