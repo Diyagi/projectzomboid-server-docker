@@ -25,6 +25,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gettext-base \
     procps \
     jq \
+    tini \
+    gosu \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -35,9 +37,12 @@ LABEL maintainer="support@indifferentbroccoli.com" \
       github="https://github.com/indifferentbroccoli/projectzomboid-server-docker" \
       dockerhub="https://hub.docker.com/r/indifferentbroccoli/projectzomboid-server-docker"
 
-ENV HOME=/home/steam \
-    CONFIG_DIR=/project-zomboid-config \
-    ADMIN_USERNAME=admin \
+ENV STEAMAPP="projectzomboid"
+ENV STEAMAPPDIR="${HOMEDIR}/${STEAMAPP}-dedicated"
+ENV STEAMAPPDATADIR="${HOMEDIR}/${STEAMAPP}-data"
+ENV SCRIPTSDIR="${HOMEDIR}/scripts"
+
+ENV ADMIN_USERNAME=admin \
     ADMIN_PASSWORD=admin \
     DEFAULT_PORT=16261 \
     UDP_PORT=16262 \
@@ -45,21 +50,26 @@ ENV HOME=/home/steam \
     SERVER_NAME=pzserver \
     STEAM_VAC=true \
     USE_STEAM=true \
-    GENERATE_SETTINGS=true \
     SERVER_BRANCH="" \
     MEMORY_XMX_GB=8 \
     MEMORY_XMS_GB=""
 
-COPY ./scripts /home/steam/server/
-
 COPY branding /branding
 
-RUN mkdir -p /project-zomboid /project-zomboid-config && \
-    chmod +x /home/steam/server/*.sh
+# Setup folders
+COPY ./scripts ${SCRIPTSDIR}
+RUN set -x \
+    && chmod +x -R "${SCRIPTSDIR}" \
+    && mkdir -p "${STEAMAPPDIR}" \
+    && mkdir -p "${STEAMAPPDATADIR}" \
+    && chown -R "${USER}:${USER}" "${SCRIPTSDIR}" "${STEAMAPPDIR}" "${STEAMAPPDATADIR}"
 
-WORKDIR /home/steam/server
+WORKDIR ${HOMEDIR}
 
 HEALTHCHECK --start-period=5m \
             CMD pgrep "ProjectZomboid" > /dev/null || exit 1
 
-ENTRYPOINT ["/home/steam/server/init.sh"]
+# Use tini as the entrypoint for signal handling
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+CMD ["bash", "/home/steam/scripts/entry.sh"]

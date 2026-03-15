@@ -61,7 +61,7 @@ install() {
 # rcon call
 rcon-call() {
   local args="$1"
-  rcon-cli -c /home/steam/server/rcon.yml "$args"
+  rcon-cli -c "${SCRIPTSDIR}/rcon.yml" "$args"
 }
 
 # Saves the server
@@ -100,7 +100,7 @@ check_admin_password() {
 
 # Configure JVM memory settings in ProjectZomboid64.json
 configure_memory() {
-    local json_file="/project-zomboid/ProjectZomboid64.json"
+    local json_file="${STEAMAPPDIR}/ProjectZomboid64.json"
     local memory_xmx_gb=${MEMORY_XMX_GB:-8}
     local memory_xms_gb=${MEMORY_XMS_GB:-""}
     
